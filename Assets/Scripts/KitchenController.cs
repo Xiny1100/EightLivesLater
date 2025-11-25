@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FridgeDoorController : MonoBehaviour
+public class KitchenController : MonoBehaviour
 {
     public Animator animator;  // Drag the Animator here
     private bool isOpen = false;
