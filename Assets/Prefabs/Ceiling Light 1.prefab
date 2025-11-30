@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2564227279652702280}
   - component: {fileID: 310121292744305381}
   - component: {fileID: 4606635535359132577}
+  - component: {fileID: 5178635233140634474}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -26,13 +27,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5046182445358062218}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.50132316, y: -0.013644097, z: -0.004087716, w: 0.86514294}
-  m_LocalPosition: {x: -0.004, y: -0.21, z: 0.057}
+  m_LocalRotation: {x: 0.5, y: -0.5, z: -0.5, w: 0.5}
+  m_LocalPosition: {x: -0.004, y: -0.139, z: 0.002}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3154110788732479221}
-  m_LocalEulerAnglesHint: {x: 60.149, y: -3.191, z: -2.39}
+  m_LocalEulerAnglesHint: {x: 180, y: 90, z: 90}
 --- !u!108 &310121292744305381
 Light:
   m_ObjectHideFlags: 0
@@ -44,8 +45,8 @@ Light:
   serializedVersion: 11
   m_Type: 2
   m_Color: {r: 0.9811321, g: 0.9822312, b: 1, a: 1}
-  m_Intensity: 1
-  m_Range: 10
+  m_Intensity: 3
+  m_Range: 50
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
@@ -83,12 +84,12 @@ Light:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingLayerMask: 1
-  m_Lightmapping: 4
+  m_Lightmapping: 2
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
-  m_BounceIntensity: 1
+  m_BounceIntensity: 50
   m_ColorTemperature: 11216
-  m_UseColorTemperature: 1
+  m_UseColorTemperature: 0
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
@@ -127,6 +128,23 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!114 &5178635233140634474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5046182445358062218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 376b89942d49f414daafddec093f812c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LightFlicker
+  minIntensity: 0
+  maxIntensity: 1.5
+  flickerSpeed: 0.1
+  flickerChance: 0.2
+  flickerInterval: 0.05
 --- !u!1001 &3192804128927318302
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -136,16 +154,28 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: df56c77912d5a4946857c98ddf46541c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.5000001
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: df56c77912d5a4946857c98ddf46541c, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: df56c77912d5a4946857c98ddf46541c, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.5000001
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: df56c77912d5a4946857c98ddf46541c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -12.299621
+      value: 0.4013672
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: df56c77912d5a4946857c98ddf46541c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.73158
+      value: 3.82399
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: df56c77912d5a4946857c98ddf46541c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -10.52533
+      value: -3.001522
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: df56c77912d5a4946857c98ddf46541c, type: 3}
       propertyPath: m_LocalRotation.w
