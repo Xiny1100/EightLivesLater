@@ -206,7 +206,7 @@ Material:
     - Boolean_d6564e6d0cbe4e1194d4c4a23260af1f: 0
     - Vector1_1: 0.15
     - Vector1_10fc8cdd60f54c029cac8767eef0f2fa: 1
-    - Vector1_119DBA34: 0
+    - Vector1_119DBA34: -2
     - Vector1_12fe0cb484434e1bb9fbb72624870f7b: 1
     - Vector1_1ecf8adf107543b697e04962611a6572: 1.1
     - Vector1_2: 5.25
@@ -221,7 +221,7 @@ Material:
     - Vector1_AF65C65C: 0
     - Vector1_BDF4927C: 0.676
     - Vector1_D39B6A9D: 1
-    - Vector1_ED619312: 0.44
+    - Vector1_ED619312: -0.54
     - Vector1_a08646eebd304fa3bf572986acfc4406: 1
     - Vector1_a385c10908ec4a66ac43f9725d903ba7: 1
     - Vector1_d20f0c0628d84eb6a7c88208a49a9f95: 1

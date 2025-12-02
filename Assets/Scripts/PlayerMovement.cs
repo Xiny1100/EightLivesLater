@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -26,6 +27,24 @@ public class PlayerMovement : MonoBehaviour
     public float idleTimeBeforeSit = 10f;
     public float minIdleTime = 5f;
 
+    [Header("Raycasting Toilet Door")]
+    public float checkDistance = 0.2f;
+    public AudioClip lowerDownSound;
+    public string playerAnimationName = "LowerDown";
+
+    [Header("Lowering Settings")]
+    public bool isLowering = false;
+    public float lowerDuration = 3f;
+    public float loweredHeightMultiplier = 0.2f;
+
+    private CapsuleCollider playerCollider;
+    private float originalHeight;
+    private float originalCenterY;
+
+    private AudioSource audioSource;
+    private bool animationPlayed = false;
+    private GameObject currentDoor;
+
     public Transform orientation;
 
     float horizontalInput;
@@ -48,6 +67,10 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
+        playerCollider = GetComponent<CapsuleCollider>();
+        originalHeight = playerCollider.height;
+        originalCenterY = playerCollider.center.y;
+        audioSource = GetComponent<AudioSource>();
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         readyToJump = true;
@@ -56,6 +79,24 @@ public class PlayerMovement : MonoBehaviour
             animator = GetComponent<Animator>();
 
         lastPosition = transform.position;
+    }
+
+
+
+    private GameObject GetDoorInFront()
+    {
+        RaycastHit hit;
+        Vector3 origin = orientation.position;
+        Vector3 dir = orientation.forward;
+
+        if (Physics.Raycast(origin, dir, out hit, checkDistance))
+        {
+            if (hit.collider.CompareTag("Door"))
+            {
+                return hit.collider.gameObject;
+            }
+        }
+        return null;
     }
 
     public void MyInput()
@@ -106,11 +147,20 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.linearDamping = 0;
         }
+
+        //Raycasting to check for toilet door
+        RaycastHit hit;
+        Vector3 origin = orientation.position;
+        Vector3 dir = orientation.forward;
+
+        Debug.DrawRay(origin, dir * checkDistance, Color.yellow);
+
+
     }
 
     void FixedUpdate()
     {
-        if (!isAttacking && !isDead && !isSitting)
+        if (!isAttacking && !isDead && !isSitting && !isLowering)
             MovePlayer();
     }
 
