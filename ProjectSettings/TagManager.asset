@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 3
   tags:
   - Floor
+  - Enemy
+  - Cheese
+  - CheeseGUI
   layers:
   - Default
   - TransparentFX
