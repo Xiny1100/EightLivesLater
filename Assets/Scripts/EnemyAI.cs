@@ -45,7 +45,7 @@ public class EnemyAI : MonoBehaviour
 
 
     private HidingSpot currentHidingSpot;
-    
+
     void Start()
     {
         agent.speed = patrolSpeed;
@@ -107,23 +107,21 @@ public class EnemyAI : MonoBehaviour
         {
             canSeePlayer = false;
             Debug.Log("Player is hiding, enemy ignores them");
-            return;
         }
-
-        // Normal spotlight detection
-        Vector3 directionToPlayer = (player.position - spotlight.transform.position).normalized;
-        float distanceToPlayer = Vector3.Distance(spotlight.transform.position, player.position);
-        float angle = Vector3.Angle(spotlight.transform.forward, directionToPlayer);
-
-        if (angle < spotlight.spotAngle / 2 && distanceToPlayer <= spotlight.range)
+        else
         {
-            if (!Physics.Raycast(spotlight.transform.position, directionToPlayer, distanceToPlayer, obstructionMask))
-            {
-                canSeePlayer = true;
-                Debug.Log("Enemy sees player!");
+            // Spotlight detection
+            Vector3 directionToPlayer = (player.position - spotlight.transform.position).normalized;
+            float distanceToPlayer = Vector3.Distance(spotlight.transform.position, player.position);
+            float angle = Vector3.Angle(spotlight.transform.forward, directionToPlayer);
 
-                if (canSeePlayer)
+            if (angle < spotlight.spotAngle / 2 && distanceToPlayer <= spotlight.range)
+            {
+                if (!Physics.Raycast(spotlight.transform.position, directionToPlayer, distanceToPlayer, obstructionMask))
                 {
+                    canSeePlayer = true;
+                    Debug.Log("Enemy sees player!");
+
                     // Play found sound once
                     if (!hasPlayedFoundSound && audioSource != null && foundSound != null)
                     {
@@ -138,25 +136,33 @@ public class EnemyAI : MonoBehaviour
                         StopAllCoroutines(); // stop any fading coroutines
                         StartCoroutine(FadeInMusic(chaseMusicSource, fadeDuration));
                     }
-
-                    return;
                 }
-
-                return;
+                else
+                {
+                    // Ray hit something -> cannot see
+                    canSeePlayer = false;
+                }
+            }
+            else
+            {
+                // Player outside spotlight angle or range
+                canSeePlayer = false;
             }
         }
 
+        // Fade out music if lost sight
         if (!canSeePlayer && isChaseMusicPlaying)
         {
             isChaseMusicPlaying = false;
-            StopAllCoroutines(); // stop any fading coroutines
+            StopAllCoroutines();
             StartCoroutine(FadeOutMusic(chaseMusicSource, fadeDuration));
             hasPlayedFoundSound = false;
         }
 
-
-        Debug.Log("Player not in spotlight.");
+        if (!canSeePlayer)
+            Debug.Log("Player not in spotlight.");
     }
+
 
     void GoToNextPoint()
     {
@@ -202,7 +208,7 @@ public class EnemyAI : MonoBehaviour
 
         // Freeze player immediately
         FreezePlayer();
-        
+
         // Fade out chase music
         if (chaseMusicSource != null)
         {
