@@ -28,18 +28,11 @@ public class PlayerMovement : MonoBehaviour
     public float idleTimeBeforeSit = 10f;
     public float minIdleTime = 5f;
 
-<<<<<<< HEAD
     [Header("Shadow Detection")]
     public AudioClip lowerDownSound;
     public string playerAnimationName = "LowerDown";
     public float raycastDistance = 0.2f;
     public LayerMask shadowLayerMask = 1;
-=======
-    [Header("Raycasting Toilet Door")]
-    public float checkDistance = 0.2f;
-    public AudioClip lowerDownSound;
-    public string playerAnimationName = "LowerDown";
->>>>>>> origin/main
 
     [Header("Lowering Settings")]
     public bool isLowering = false;
@@ -52,12 +45,9 @@ public class PlayerMovement : MonoBehaviour
 
     private AudioSource audioSource;
     private bool animationPlayed = false;
-<<<<<<< HEAD
+
     private GameObject detectedShadow;
     private Collider shadowCollider;
-=======
-    private GameObject currentDoor;
->>>>>>> origin/main
 
     public Transform orientation;
 
@@ -99,7 +89,6 @@ public class PlayerMovement : MonoBehaviour
         lastPosition = transform.position;
     }
 
-<<<<<<< HEAD
     IEnumerator DoLowerAnimation()
     {
         isLowering = true;
@@ -209,24 +198,6 @@ public class PlayerMovement : MonoBehaviour
 
         isLowering = false;
         animationPlayed = false;
-=======
-
-
-    private GameObject GetDoorInFront()
-    {
-        RaycastHit hit;
-        Vector3 origin = orientation.position;
-        Vector3 dir = orientation.forward;
-
-        if (Physics.Raycast(origin, dir, out hit, checkDistance))
-        {
-            if (hit.collider.CompareTag("Door"))
-            {
-                return hit.collider.gameObject;
-            }
-        }
-        return null;
->>>>>>> origin/main
     }
 
     public void MyInput()
@@ -290,14 +261,12 @@ public class PlayerMovement : MonoBehaviour
             rb.linearDamping = 0;
         }
 
-        //Raycasting to check for toilet door
+        //Raycasting to check for toilet door - FIXED: using raycastDistance instead of checkDistance
         RaycastHit hit;
         Vector3 origin = orientation.position;
         Vector3 dir = orientation.forward;
 
-        Debug.DrawRay(origin, dir * checkDistance, Color.yellow);
-
-
+        Debug.DrawRay(origin, dir * raycastDistance, Color.yellow); // Changed checkDistance to raycastDistance
     }
 
     private void CheckForShadow()
