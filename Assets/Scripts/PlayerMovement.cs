@@ -14,6 +14,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Keybinds")]
     public KeyCode jumpKey = KeyCode.Space;
     public KeyCode attackKey = KeyCode.Mouse0;
+    public KeyCode interactKey = KeyCode.E;
 
     [Header("Ground Check")]
     public float playerHeight;
@@ -27,10 +28,11 @@ public class PlayerMovement : MonoBehaviour
     public float idleTimeBeforeSit = 10f;
     public float minIdleTime = 5f;
 
-    [Header("Raycasting Toilet Door")]
-    public float checkDistance = 0.2f;
+    [Header("Shadow Detection")]
     public AudioClip lowerDownSound;
     public string playerAnimationName = "LowerDown";
+    public float raycastDistance = 0.2f;
+    public LayerMask shadowLayerMask = 1;
 
     [Header("Lowering Settings")]
     public bool isLowering = false;
@@ -43,7 +45,9 @@ public class PlayerMovement : MonoBehaviour
 
     private AudioSource audioSource;
     private bool animationPlayed = false;
-    private GameObject currentDoor;
+
+    private GameObject detectedShadow;
+    private Collider shadowCollider;
 
     public Transform orientation;
 
@@ -65,6 +69,10 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 lastPosition;
     private bool isMoving = false;
 
+    // Shadow detection variables
+    private bool isLookingAtShadow = false;
+    private bool canInteractWithShadow = true;
+
     void Start()
     {
         playerCollider = GetComponent<CapsuleCollider>();
@@ -81,22 +89,115 @@ public class PlayerMovement : MonoBehaviour
         lastPosition = transform.position;
     }
 
-
-
-    private GameObject GetDoorInFront()
+    IEnumerator DoLowerAnimation()
     {
-        RaycastHit hit;
-        Vector3 origin = orientation.position;
-        Vector3 dir = orientation.forward;
+        isLowering = true;
+        animationPlayed = true;
+        canInteractWithShadow = false; // Prevent multiple interactions
 
-        if (Physics.Raycast(origin, dir, out hit, checkDistance))
+        if (detectedShadow != null && shadowCollider != null)
         {
-            if (hit.collider.CompareTag("Door"))
+            // Disable shadow collision temporarily
+            shadowCollider.enabled = false;
+
+            // Calculate target position (move forward through the shadow)
+            Vector3 moveDirection = orientation.forward;
+            Vector3 targetPosition = transform.position + moveDirection * 1.5f;
+
+            animator.SetBool("isLowering", true);
+            if (audioSource != null && lowerDownSound != null)
             {
-                return hit.collider.gameObject;
+                audioSource.clip = lowerDownSound;
+                audioSource.Play();
             }
+
+            // Shrink player collider
+            playerCollider.height = originalHeight * loweredHeightMultiplier;
+            playerCollider.center = new Vector3(
+                playerCollider.center.x,
+                originalCenterY * loweredHeightMultiplier,
+                playerCollider.center.z
+            );
+
+            // Move player through the shadow area over time
+            float elapsedTime = 0f;
+            Vector3 startPosition = transform.position;
+
+            while (elapsedTime < lowerDuration)
+            {
+                elapsedTime += Time.deltaTime;
+                float progress = elapsedTime / lowerDuration;
+
+                // Smooth movement through the shadow
+                transform.position = Vector3.Lerp(startPosition, targetPosition, progress);
+
+                yield return null;
+            }
+
+            // Ensure final position
+            transform.position = targetPosition;
+
+            // Reset animation and player size
+            animator.SetBool("isLowering", false);
+
+            playerCollider.height = originalHeight;
+            playerCollider.center = new Vector3(
+                playerCollider.center.x,
+                originalCenterY,
+                playerCollider.center.z
+            );
+
+            // Wait a bit before re-enabling shadow interaction
+            yield return new WaitForSeconds(1f);
+
+            // Re-enable shadow collision
+            shadowCollider.enabled = true;
+
+            // Reset all shadow-related variables
+            detectedShadow = null;
+            shadowCollider = null;
+            isLookingAtShadow = false;
+
+            yield return new WaitForSeconds(0.5f); // Additional cooldown
+
+            // Re-enable interactions
+            canInteractWithShadow = true;
         }
-        return null;
+        else
+        {
+            // Fallback if no shadow found
+            animator.SetBool("isLowering", true);
+            if (audioSource != null && lowerDownSound != null)
+            {
+                audioSource.clip = lowerDownSound;
+                audioSource.Play();
+            }
+
+            playerCollider.height = originalHeight * loweredHeightMultiplier;
+            playerCollider.center = new Vector3(
+                playerCollider.center.x,
+                originalCenterY * loweredHeightMultiplier,
+                playerCollider.center.z
+            );
+
+            yield return new WaitForSeconds(lowerDuration);
+
+            animator.SetBool("isLowering", false);
+
+            playerCollider.height = originalHeight;
+            playerCollider.center = new Vector3(
+                playerCollider.center.x,
+                originalCenterY,
+                playerCollider.center.z
+            );
+
+            // Reset variables for fallback case
+            yield return new WaitForSeconds(1f);
+            canInteractWithShadow = true;
+        }
+
+        isLowering = false;
+        animationPlayed = false;
     }
 
     public void MyInput()
@@ -105,7 +206,7 @@ public class PlayerMovement : MonoBehaviour
         verticalInput = Input.GetAxisRaw("Vertical");
 
         // Check for key DOWN, not holding
-        if (Input.GetKeyDown(jumpKey) && readyToJump && grounded && !isAttacking && !isSitting)
+        if (Input.GetKeyDown(jumpKey) && readyToJump && grounded && !isAttacking && !isSitting && !isLowering)
         {
             readyToJump = false;
             isJumping = true;
@@ -113,9 +214,15 @@ public class PlayerMovement : MonoBehaviour
             Invoke(nameof(ResetJump), jumpCoolDown);
         }
 
-        if (Input.GetKeyDown(attackKey) && grounded && canAttack && !isDead && !isJumping && !isSitting)
+        if (Input.GetKeyDown(attackKey) && grounded && canAttack && !isDead && !isJumping && !isSitting && !isLowering)
         {
             Attack();
+        }
+
+        // Check for interact key to lower down through shadow
+        if (Input.GetKeyDown(interactKey) && isLookingAtShadow && !isLowering && !isAttacking && !isSitting && canInteractWithShadow)
+        {
+            StartCoroutine(DoLowerAnimation());
         }
 
         if (isSitting && (horizontalInput != 0 || verticalInput != 0 || Input.GetKeyDown(jumpKey) || Input.GetKeyDown(attackKey)))
@@ -134,6 +241,12 @@ public class PlayerMovement : MonoBehaviour
         UpdateIdleTimer();
         UpdateAnimations();
 
+        // Only check for shadow if we can interact and not currently lowering
+        if (!isLowering && canInteractWithShadow)
+        {
+            CheckForShadow();
+        }
+
         if (grounded && isJumping && rb.linearVelocity.y <= 0)
         {
             isJumping = false;
@@ -148,14 +261,45 @@ public class PlayerMovement : MonoBehaviour
             rb.linearDamping = 0;
         }
 
-        //Raycasting to check for toilet door
+        //Raycasting to check for toilet door - FIXED: using raycastDistance instead of checkDistance
         RaycastHit hit;
         Vector3 origin = orientation.position;
         Vector3 dir = orientation.forward;
 
-        Debug.DrawRay(origin, dir * checkDistance, Color.yellow);
+        Debug.DrawRay(origin, dir * raycastDistance, Color.yellow); // Changed checkDistance to raycastDistance
+    }
 
+    private void CheckForShadow()
+    {
+        RaycastHit hit;
+        Vector3 origin = orientation.position;
+        Vector3 dir = orientation.forward;
 
+        // Debug visualization
+        Debug.DrawRay(origin, dir * raycastDistance, isLookingAtShadow ? Color.green : Color.yellow);
+
+        // Store previous state
+        bool wasLookingAtShadow = isLookingAtShadow;
+
+        // Reset detection first
+        isLookingAtShadow = false;
+
+        if (Physics.Raycast(origin, dir, out hit, raycastDistance, shadowLayerMask))
+        {
+            if (hit.collider.CompareTag("ToiletDoor") && hit.collider.enabled)
+            {
+                isLookingAtShadow = true;
+                detectedShadow = hit.collider.gameObject;
+                shadowCollider = hit.collider;
+            }
+        }
+
+        // If we're no longer looking at a valid shadow, clear references
+        if (!isLookingAtShadow && (detectedShadow != null || shadowCollider != null))
+        {
+            detectedShadow = null;
+            shadowCollider = null;
+        }
     }
 
     void FixedUpdate()
@@ -222,7 +366,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void UpdateIdleTimer()
     {
-        if (!isMoving && grounded && !isDead && !isSitting && !isAttacking)
+        if (!isMoving && grounded && !isDead && !isSitting && !isAttacking && !isLowering)
         {
             idleTimer += Time.deltaTime;
 
@@ -279,6 +423,7 @@ public class PlayerMovement : MonoBehaviour
         animator.SetBool("IsAttacking", isAttacking);
         animator.SetBool("IsDead", isDead);
         animator.SetBool("IsSitting", isSitting);
+        animator.SetBool("IsLowering", isLowering);
     }
 
     private void Jump()
@@ -314,7 +459,12 @@ public class PlayerMovement : MonoBehaviour
     public void Die()
     {
         isDead = true;
-        BreakSit(); 
+        BreakSit();
+        // Reset shadow detection when player dies
+        detectedShadow = null;
+        shadowCollider = null;
+        isLookingAtShadow = false;
+        canInteractWithShadow = true;
     }
 
     public void Respawn()
@@ -324,7 +474,12 @@ public class PlayerMovement : MonoBehaviour
         canAttack = true;
         isJumping = false;
         isSitting = false;
+        isLowering = false;
         idleTimer = 0f;
+        isLookingAtShadow = false;
+        detectedShadow = null;
+        shadowCollider = null;
+        canInteractWithShadow = true;
     }
 
     void OnGUI()
@@ -333,6 +488,33 @@ public class PlayerMovement : MonoBehaviour
         GUI.Label(new Rect(10, 100, 300, 20), $"Idle Timer: {idleTimer:F1}/{idleTimeBeforeSit}");
         GUI.Label(new Rect(10, 120, 300, 20), $"Is Moving: {isMoving}");
         GUI.Label(new Rect(10, 140, 300, 20), $"Is Sitting: {isSitting}");
+        GUI.Label(new Rect(10, 160, 300, 20), $"Looking at Shadow: {isLookingAtShadow}");
+        GUI.Label(new Rect(10, 180, 300, 20), $"Is Lowering: {isLowering}");
+        GUI.Label(new Rect(10, 200, 300, 20), $"Can Interact: {canInteractWithShadow}");
 #endif
+
+        // Interaction prompt for player
+        if (isLookingAtShadow && !isLowering && canInteractWithShadow)
+        {
+            GUIStyle style = new GUIStyle(GUI.skin.box);
+            style.alignment = TextAnchor.MiddleCenter;
+            style.fontSize = 20;
+            style.normal.textColor = Color.white;
+            style.normal.background = MakeTexture(2, 2, new Color(0, 0, 0, 0.8f));
+
+            GUI.Box(new Rect(Screen.width / 2 - 150, Screen.height / 2 + 50, 300, 40), "Press E to Lower Down", style);
+        }
+    }
+
+    // Helper method to create texture for GUI background
+    private Texture2D MakeTexture(int width, int height, Color color)
+    {
+        Color[] pix = new Color[width * height];
+        for (int i = 0; i < pix.Length; i++)
+            pix[i] = color;
+        Texture2D result = new Texture2D(width, height);
+        result.SetPixels(pix);
+        result.Apply();
+        return result;
     }
 }
