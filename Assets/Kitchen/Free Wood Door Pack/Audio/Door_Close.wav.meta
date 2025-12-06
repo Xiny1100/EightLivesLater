@@ -1,0 +1,29 @@
+fileFormatVersion: 2
+guid: 3ce4a69e373e2514b935bf65df08a2f9
+timeCreated: 1499463735
+licenseType: Store
+AudioImporter:
+  serializedVersion: 6
+  defaultSettings:
+    loadType: 0
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 1
+    conversionMode: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  preloadAudioData: 1
+  loadInBackground: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 280509
+  packageName: Free Wood Door Pack
+  packageVersion: 1.0
+  assetPath: Assets/Free Wood Door Pack/Audio/Door_Close.wav
+  uploadId: 658197

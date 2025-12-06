@@ -269,9 +269,15 @@ MonoBehaviour:
   MinimumDistanceFromTarget: 0.5
   AvoidObstacles:
     Enabled: 1
+<<<<<<< HEAD
     DistanceLimit: 0
     MinimumOcclusionTime: 0
     CameraRadius: 0.4
+=======
+    ObstacleLayers:
+      serializedVersion: 2
+      m_Bits: 1
+>>>>>>> origin/main
     UseFollowTarget:
       Enabled: 0
       YOffset: 0

@@ -85,10 +85,16 @@ MonoBehaviour:
   playerHeight: 1.3
   whatIsGround:
     serializedVersion: 2
-    m_Bits: 1024
+    m_Bits: 0
   animator: {fileID: 9043644110900376900}
   idleTimeBeforeSit: 10
   minIdleTime: 5
+  checkDistance: 0.2
+  lowerDownSound: {fileID: 0}
+  playerAnimationName: LowerDown
+  isLowering: 0
+  lowerDuration: 3
+  loweredHeightMultiplier: 0.2
   orientation: {fileID: 5305052715184849326}
 --- !u!136 &4014975278560037083
 CapsuleCollider:
